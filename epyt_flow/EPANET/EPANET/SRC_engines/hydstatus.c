@@ -220,7 +220,7 @@ StatusType  pumpstatus(Project *pr, int k, double dh)
 
     // Find maximum head (hmax) pump can deliver
     p = findpump(net, k);
-    if (net->Pump[p].Ptype == CONST_HP)
+    if (net->Pump[p].Ptype == CONST_HP || net->Pump[p].Ptype == HEADGAIN)
     {
         // Use huge value for constant HP pump
         hmax = BIG;

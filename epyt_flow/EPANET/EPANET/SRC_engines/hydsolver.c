@@ -436,6 +436,7 @@ void  newlinkflows(Project *pr, Hydbalance *hbal, double *qsum, double *dqsum)
         // Prevent flow in constant HP pumps from going negative
         if (link->Type == PUMP)
         {
+            printf("updating pump flows: dh:%f, dq:%f\n",dh,dq);
             n = findpump(net, k);
             if (net->Pump[n].Ptype == CONST_HP && dq > hyd->LinkFlow[k])
             {

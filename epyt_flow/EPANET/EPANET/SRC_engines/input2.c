@@ -400,7 +400,7 @@ int updatepumpparams(Project *pr, int pumpindex)
         return errcode;
     }
 
-    else if (pump->Ptype == NOCURVE) // Pump curve specified
+    else if (pump->Ptype == NOCURVE || pump->Ptype == HEADGAIN) // Pump curve specified
     {
         curveindex = pump->Hcurve;
         if (curveindex == 0) return 226;
@@ -422,7 +422,7 @@ int updatepumpparams(Project *pr, int pumpindex)
         // 3 point curve with shutoff head
         else if (npts == 3 && curve->X[0] == 0.0)
         {
-            pump->Ptype = POWER_FUNC;
+            if (pump->Ptype == NOCURVE) pump->Ptype = POWER_FUNC;
             h0 = curve->Y[0];
             q1 = curve->X[1];
             h1 = curve->Y[1];
@@ -433,7 +433,7 @@ int updatepumpparams(Project *pr, int pumpindex)
         // Custom pump curve
         else
         {
-            pump->Ptype = CUSTOM;
+            if (pump->Ptype == NOCURVE) pump->Ptype = CUSTOM;
             for (m = 1; m < npts; m++)
             {
                 if (curve->Y[m] >= curve->Y[m - 1]) return 227;
@@ -444,7 +444,7 @@ int updatepumpparams(Project *pr, int pumpindex)
         }
 
         // Compute shape factors & limits of power function curves
-        if (pump->Ptype == POWER_FUNC)
+        if (pump->Ptype == POWER_FUNC || (pump->Ptype == HEADGAIN && npts == 3 && curve->X[0] == 0.0))
         {
             if (!powercurve(h0, h1, h2, q1, q2, &a, &b, &c)) return 227;
             else
@@ -455,9 +455,12 @@ int updatepumpparams(Project *pr, int pumpindex)
                 pump->Q0 = q1;
                 pump->Qmax = pow((-a / b), (1.0 / c));
                 pump->Hmax = h0;
+
             }
         }
+
     }
+    printf("initialized pump, q: %f\n", pump->Q0);
     return 0;
 }
 

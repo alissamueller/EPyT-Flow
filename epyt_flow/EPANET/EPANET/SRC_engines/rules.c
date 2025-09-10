@@ -40,6 +40,7 @@ char *Ruleword[] = {w_RULE, w_IF,   w_AND,      w_OR,
 enum Varwords {
   r_DEMAND,
   r_HEAD,
+  r_HEADGAIN,
   r_GRADE,
   r_LEVEL,
   r_PRESSURE,
@@ -52,7 +53,7 @@ enum Varwords {
   r_FILLTIME,
   r_DRAINTIME
 };
-char *Varword[] = {w_DEMAND,    w_HEAD,     w_GRADE,     w_LEVEL, w_PRESSURE,
+char *Varword[] = {w_DEMAND,    w_HEAD,     w_HEADGAIN,  w_GRADE, w_LEVEL, w_PRESSURE,
                    w_FLOW,      w_STATUS,   w_SETTING,   w_POWER, w_TIME,
                    w_CLOCKTIME, w_FILLTIME, w_DRAINTIME, NULL};
 

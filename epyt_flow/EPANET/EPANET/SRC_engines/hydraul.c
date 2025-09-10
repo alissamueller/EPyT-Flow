@@ -26,6 +26,7 @@ const double QZERO = 1.e-6;  // Equivalent to zero flow in cfs
 extern int  createsparse(Project *);
 extern void freesparse(Project *);
 extern int  hydsolve(Project *, int *, double *);
+extern void curvecoeff(Project *pr, int i, double q, double *h0, double *r);
 
 // Local functions
 int     allocmatrix(Project *);
@@ -365,7 +366,33 @@ void  initlinkflow(Project *pr, int i, char s, double k)
     }
     else if (link->Type == PUMP)
     {
-        hyd->LinkFlow[i] = k * n->Pump[findpump(n,i)].Q0;
+
+        if (n->Pump[findpump(n,i)].Ptype == HEADGAIN)
+        {
+
+            printf("initializing pump flow, setting:%f\n",k);
+            if (k > QZERO)
+            {
+                double q0 = n->Pump[findpump(n,i)].Q0;
+                double r = 0.0;
+                double h0 = 0.0;
+                curvecoeff(pr, n->Pump[findpump(n,i)].Hcurve, q0, &h0, &r);
+                double ref_h = h0  + r * q0;
+                //hyd->LinkFlow[i] = sqrt(k/ pr->Ucf[HEAD]/(ref_h+QZERO)) * q0;
+                hyd->LinkFlow[i] = q0;
+                printf("initializing pump flow, q0:%f, R:%f, h0:%f, ref_h:%f, q_new:%f\n",q0,r,h0, ref_h, hyd->LinkFlow[i]);
+            }
+            else
+            {
+                hyd->LinkFlow[i] = QZERO;
+            }
+
+        }
+        else
+        {
+            hyd->LinkFlow[i] = k * n->Pump[findpump(n,i)].Q0;
+        }
+
     }
     else
     {
@@ -973,7 +1000,27 @@ void  getenergy(Project *pr, int k, double *kw, double *eff)
     {
         j = findpump(net, k);
         e = hyd->Epump;
-        speed = hyd->LinkSetting[k];
+        if (net->Pump[j].Ptype == HEADGAIN)
+        {
+            // TODO check that those coeffs are correct indepentent of curve type
+            double ref_h = net->Pump[j].H0  + net->Pump[j].R * hyd->LinkFlow[k];
+            double ref_speed = 1.0;
+            while (ref_h > 0.0)
+            {
+                ref_speed += 0.5;
+                ref_h = net->Pump[j].H0 * SQR(ref_speed)  + net->Pump[j].R * ref_speed * hyd->LinkFlow[k];
+
+            }
+            speed = sqrt(-hyd->LinkSetting[k]/pr->Ucf[HEAD]/ref_h) * ref_speed;
+            //speed = sqrt(-hyd->LinkSetting[k]/pr->Ucf[HEAD]/ref_h);
+            printf("energy computation for HEADGAIN pump, ref_h: %f, new_h: %f, speed:%f\n",ref_h,hyd->LinkSetting[k],speed);
+
+        }
+        else
+        {
+            speed = hyd->LinkSetting[k];
+        }
+
         if ((i = net->Pump[j].Ecurve) > 0)
         {
             q4eff = q / speed * pr->Ucf[FLOW];

@@ -173,6 +173,7 @@ typedef enum {
   CONST_HP,      // constant horsepower
   POWER_FUNC,    // power function
   CUSTOM,        // user-defined custom curve
+  HEADGAIN,      // constant headgain defined by curve
   NOCURVE
 } PumpType;
 

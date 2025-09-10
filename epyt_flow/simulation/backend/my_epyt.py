@@ -31,6 +31,9 @@ class EPyT(epanet):
         self.LibEPANETpath = self.api.LibEPANETpath
         self.LibEPANET = self.api.LibEPANET
 
+        # new pumptype
+        self.TYPEPUMP = ['CONSTANT_HORSEPOWER', 'POWER_FUNCTION', 'CUSTOM','HEADGAIN']
+
     def _logFunctionError(self, function_name):
         # Do not print warnings.
         pass

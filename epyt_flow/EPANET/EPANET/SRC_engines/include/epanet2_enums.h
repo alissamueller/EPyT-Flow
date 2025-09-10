@@ -380,7 +380,8 @@ typedef enum {
   EN_CONST_HP    = 0,   //!< Constant horsepower
   EN_POWER_FUNC  = 1,   //!< Power function
   EN_CUSTOM      = 2,   //!< User-defined custom curve
-  EN_NOCURVE     = 3    //!< No curve
+  EN_HEADGAIN    = 3,
+  EN_NOCURVE     = 4    //!< No curve
 } EN_PumpType;
 
 /// Types of data curves

@@ -439,6 +439,13 @@ int pumpdata(Project *pr)
             pump->Ptype = CONST_HP;
             link->Km = y;
         }
+        else if (match(parser->Tok[m - 1], w_HEADGAIN))  // Custom pump curve
+        {
+            c = findcurve(net, parser->Tok[m]);
+            if (c == 0) return setError(parser, m, 206);
+            pump->Ptype = HEADGAIN;
+            pump->Hcurve = c;
+        }
         else if (match(parser->Tok[m - 1], w_HEAD))  // Custom pump curve
         {
             c = findcurve(net, parser->Tok[m]);

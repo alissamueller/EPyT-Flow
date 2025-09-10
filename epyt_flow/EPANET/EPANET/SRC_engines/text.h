@@ -167,6 +167,7 @@
 
 #define   w_EFFIC       "EFFI"
 #define   w_HEAD        "HEAD"
+#define   w_HEADGAIN    "HEADGAIN"
 #define   w_POWER       "POWER"
 #define   w_SPEED       "SPEE"
 

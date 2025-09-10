@@ -40,6 +40,7 @@ const double CBIG   = 1.e8;
 //void   matrixcoeffs(Project *);
 //void   emitterheadloss(Project *, int, double *, double *);
 //void   demandheadloss(Project *, int, double, double, double *, double *);
+void    curvecoeff(Project *pr, int i, double q, double *h0, double *r);
 
 // Local functions
 static void    linkcoeffs(Project *pr);
@@ -53,7 +54,7 @@ static void    DWpipecoeff(Project *pr, int k);
 static double  frictionFactor(double q, double e, double s, double *dfdq);
 
 static void    pumpcoeff(Project *pr, int k);
-static void    curvecoeff(Project *pr, int i, double q, double *h0, double *r);
+//static void    curvecoeff(Project *pr, int i, double q, double *h0, double *r);
 
 static void    valvecoeff(Project *pr, int k);
 static void    gpvcoeff(Project *pr, int k);
@@ -702,6 +703,7 @@ void  pumpcoeff(Project *pr, int k)
 
     // Obtain reference to pump object
     q = ABS(hyd->LinkFlow[k]);
+    printf("Flow at pump: %f\n",q);
     p = findpump(&pr->network, k);
     pump = &pr->network.Pump[p];
 
@@ -726,10 +728,40 @@ void  pumpcoeff(Project *pr, int k)
         pump->H0 = -h0;
         pump->R = -r;
         pump->N = 1.0;
-
+        printf("Using CUSTOM pump, h0 %f, R %f\n",h0,r);
         // Compute head loss and its gradient (with speed adjustment)
         hgrad = pump->R * setting ;
         hloss = pump->H0 * SQR(setting) + hgrad * hyd->LinkFlow[k];
+        printf("Using CUSTOM pump, hgrad %f, hloss %f", hgrad, hloss);
+    }
+    else if (pump->Ptype == HEADGAIN)
+    {
+        // Find intercept (h0) & slope (r) of pump curve
+        // line segment which contains speed-adjusted flow.
+        curvecoeff(pr, pump->Hcurve, q, &h0, &r);
+
+        // Determine head loss coefficients (negative sign
+        // converts from pump curve's head gain to head loss)
+        pump->H0 = -h0;
+        pump->R = -r;
+        pump->N = 1.0;
+
+        double ref_h = pump->H0  + pump->R * hyd->LinkFlow[k];
+        double ref_speed = 1.0;
+        while (ref_h > 0.0)
+        {
+            ref_speed += 0.5;
+            ref_h = pump->H0 * SQR(ref_speed)  + pump->R * ref_speed * hyd->LinkFlow[k];
+
+        }
+        double speed = sqrt(-setting/ pr->Ucf[HEAD]/ref_h) * ref_speed;
+        //hyd->P[k] = -CBIG;
+        //hyd->Y[k] = -setting/ pr->Ucf[HEAD] * CBIG;
+        printf("Using HEADGAIN pump, h0 %f, R %f, setting %f, conversion_factor_flow:%f, conversion_factor_head:%f, adjusted setting:%f \n",h0,r, setting, pr->Ucf[FLOW],pr->Ucf[HEAD], setting/ pr->Ucf[HEAD]);
+        //return;
+        hloss = -setting/ pr->Ucf[HEAD];
+        hgrad = pump->R * speed;
+        // printf("Using HEADGAIN pump, h0 %f, R %f, setting %f, hloss %f, hgrad %f, ref_h %f \n",h0,r, setting, hloss, hgrad, ref_h);
     }
     else
     {
@@ -776,6 +808,7 @@ void  pumpcoeff(Project *pr, int k)
             }
             // ... otherwise compute head loss from pump curve
             else hloss = h0 + hgrad * hyd->LinkFlow[k] / n;
+            printf("Using CURVE pump, hgrad %f, hloss %f", hgrad, hloss);
         }
         // ... pump curve is linear
         else
