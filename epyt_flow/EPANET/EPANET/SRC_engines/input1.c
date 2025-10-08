@@ -635,7 +635,7 @@ void convertunits(Project *pr)
             else
             {
                 // For power curve pumps, convert shutoff head and flow coeff.
-                if (pump->Ptype == POWER_FUNC)
+                if (pump->Ptype == POWER_FUNC || pump->Ptype == HEADGAIN)
                 {
                     pump->H0 /= pr->Ucf[HEAD];
                     pump->R *= (pow(pr->Ucf[FLOW], pump->N) / pr->Ucf[HEAD]);

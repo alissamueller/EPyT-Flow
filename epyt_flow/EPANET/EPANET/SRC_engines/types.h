@@ -449,6 +449,7 @@ typedef struct             // Pump Object
   int     Epat;            // energy cost pattern index
   double  Ecost;           // unit energy cost
   Senergy Energy;          // energy usage statistics
+  int     mode;            // operation mode (0 for normal, 1 for headgain)
 } Spump;
 
 typedef struct             // Valve Object

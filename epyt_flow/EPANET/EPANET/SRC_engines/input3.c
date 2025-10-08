@@ -412,6 +412,7 @@ int pumpdata(Project *pr)
     pump->Upat = 0;
     pump->Ecost = 0.0;
     pump->Epat = 0;
+    pump->mode = 0;
     if (n < 4) return 0;
 
     // If 4-th token is a number then input follows Version 1.x format
@@ -443,8 +444,9 @@ int pumpdata(Project *pr)
         {
             c = findcurve(net, parser->Tok[m]);
             if (c == 0) return setError(parser, m, 206);
-            pump->Ptype = HEADGAIN;
+            //pump->Ptype = HEADGAIN;
             pump->Hcurve = c;
+            pump->mode = 1;
         }
         else if (match(parser->Tok[m - 1], w_HEAD))  // Custom pump curve
         {
