@@ -438,7 +438,7 @@ void  newlinkflows(Project *pr, Hydbalance *hbal, double *qsum, double *dqsum)
         {
             //printf("updating pump flows: dh:%f, dq:%f\n",dh,dq);
             n = findpump(net, k);
-            if (net->Pump[n].Ptype == CONST_HP && dq > hyd->LinkFlow[k])
+            if ((net->Pump[n].Ptype == CONST_HP || net->Pump[n].mode == 1) && dq > hyd->LinkFlow[k])
             {
                 dq = hyd->LinkFlow[k] / 2.0;
             }
